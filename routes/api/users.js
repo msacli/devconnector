@@ -7,6 +7,9 @@ const jwt = require('jsonwebtoken');
 const keys = require('../../config/keys');
 const passport = require('passport');
 
+// load input validation
+const validateRegisterInput = require('../../validation/register');
+
 // @route get api/users/test
 //@desc tests users route
 //@access Public
@@ -21,6 +24,14 @@ router.get('/test', (req,res)=>{
 //@access Public
 
 router.post('/register', (req,res)=>{
+
+    const {errors, isValid} = validateRegisterInput(req.body);
+
+    // chech is vlaition works
+    if(!isValid) {
+        return res.status(400).json(errors);
+    }
+
     // form will be sent containn email and password to register
     // encrypt and save user to mongo db
     User.findOne({email: req.body.email})
