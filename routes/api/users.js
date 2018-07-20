@@ -9,6 +9,7 @@ const passport = require('passport');
 
 // load input validation
 const validateRegisterInput = require('../../validation/register');
+const validateLoginInput = require('../../validation/login');
 
 // @route get api/users/test
 //@desc tests users route
@@ -37,7 +38,8 @@ router.post('/register', (req,res)=>{
     User.findOne({email: req.body.email})
         .then(user => {
             if(user) {
-                return res.status(400).json({email: "Email already exists"});
+                errors.email ='Email already exists';
+                return res.status(400).json(errors);
             } else {
                 const avatar = gravatar.url(req.body.email, {
                     s: '200', // size
@@ -74,6 +76,15 @@ router.post('/register', (req,res)=>{
 //@access Public
 
 router.post('/login', (req,res)=>{
+    //validation
+    const {errors, isValid} = validateLoginInput(req.body);
+
+    // chech is vlaition works
+    if(!isValid) {
+        return res.status(400).json(errors);
+    }
+
+
     // send form containing email and password control if it matchs with mongo db users
 
     const email = req.body.email;
@@ -85,7 +96,8 @@ router.post('/login', (req,res)=>{
         .then(user =>{
             // check if user exits
             if(!user) {
-                return res.status(404).json({email: 'User not found'});
+                errors.email = 'user not found';
+                return res.status(404).json(errors);
             }
 
             // check password is corret but mongo password is encrypt so bcrypt.compare
@@ -112,7 +124,8 @@ router.post('/login', (req,res)=>{
                                 });
                             });
                     } else {
-                        return res.status(400). json({password: 'Password incorrect'});
+                        errors.password ='Password incorrect';
+                        return res.status(400). json(errors);
                     }
                 })
 
