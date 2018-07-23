@@ -5,7 +5,7 @@ const passport = require('passport');
 // load profile model
 const Profile = require('../../models/Profile');
 //load user model
-const User = require('../../models/user');
+const User = require('../../models/User');
 
 // @route get api/profile/test
 //@desc tests profile route
@@ -20,8 +20,18 @@ router.get('/test', (req,res)=>{res.json({msg: "Profile Works"});
 //@access private
 
 
-router.get('/',(req,res)=> {
+router.get('/', passport.authenticate('jwt', {session: false}), (req,res)=> {
+    const errors = {};
 
+    Profile.findOne({ user: req.user.id})
+        .then(profile => {
+            if(!profile) {
+                errors.noprofile = 'There is no profile for this user';
+                return res.status(404).json(errors);
+            }
+            res.json(profile);
+        })
+        .catch(err => res.status(404).json(err));
 });
 
 
